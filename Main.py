@@ -43,10 +43,10 @@ DEVICES_FILE = "devices.json"  # 🔥 NEW: Persistent device storage
 TOKEN_CACHE_TTL = 1200
 
 # 🔥 Match control
-START_MATCH_INTERVAL = 3.0
+START_MATCH_INTERVAL = 8.0
 NEW_MATCH_DELAY = 3.0   
-MAX_MATCH_DURATION = 700
-MATCH_IDLE_TIMEOUT = 8.0
+MAX_MATCH_DURATION = 180
+MATCH_IDLE_TIMEOUT = 20.0
 PRIORITY_REGIONS = ["BD","IND", "SG", "TH", "PH", "VN", "MY", "ID", "HK", "TW"]
 
 # 🔥 Cache invalidation thresholds
@@ -498,7 +498,9 @@ async def version_config():
         remote_version = data.get("remote_version")
         latest_release_version = data.get("latest_release_version")
         if not server_url or not remote_version or not latest_release_version:
+            print_warning(f"version_config incomplete: release={latest_release_version}, remote={remote_version}, server={server_url}")
             return None
+        print_info(f"version_config OK: release={latest_release_version}, remote={remote_version}, server={server_url}")
         return latest_release_version, remote_version, server_url
     except Exception:
         return None
@@ -1391,7 +1393,7 @@ async def functional_lone_wolf(addrs, starter_packet, account_region, client_ver
                     nonlocal search_attempts, last_start_time
                     search_attempts += 1
                     current_region = account_region if account_region else "BD"
-                    print_info(f"[LONE WOLF] Sending StartMatch #{search_attempts} region: {current_region}")
+                    print_info(f"[LONE WOLF] Sending StartMatch #{search_attempts} region: {current_region} version: {client_version} server: {ip}:{port}")
                     try:
                         await asyncio.sleep(random.uniform(0.3, 0.6))
                         await start_game_lone_wolf(
