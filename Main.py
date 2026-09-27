@@ -476,7 +476,7 @@ async def aes_encrypt(payload, key, iv):
     cipher = AES.new(key, AES.MODE_CBC, iv)
     return cipher.encrypt(pad(payload, AES.block_size))
 
-FREE_FIRE_VERSION = "1.132.1"
+FREE_FIRE_VERSION = "1.132.8"
 
 async def get_playstore_version():
     return FREE_FIRE_VERSION
