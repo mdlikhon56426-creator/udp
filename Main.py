@@ -1,4 +1,5 @@
 # ==================== STANDARD IMPORTS ====================
+import ssl
 import sys
 import asyncio
 import httpx
@@ -217,9 +218,16 @@ def optimize_udp_socket(sock: socket.socket):
 
 
 # ==================== NETWORK & CRYPTO ====================
+_ssl_ctx = ssl.create_default_context()
+_ssl_ctx.check_hostname = False
+_ssl_ctx.verify_mode = ssl.CERT_NONE
+_ssl_ctx.set_ciphers('DEFAULT@SECLEVEL=1')
+_ssl_ctx.minimum_version = ssl.TLSVersion.TLSv1_2
+_ssl_ctx.maximum_version = ssl.TLSVersion.TLSv1_2
+
 client = httpx.AsyncClient(
-    verify=False,
-    timeout=10.0,
+    verify=_ssl_ctx,
+    timeout=30.0,
     limits=httpx.Limits(max_connections=100, max_keepalive_connections=50)
 )
 
@@ -468,13 +476,10 @@ async def aes_encrypt(payload, key, iv):
     cipher = AES.new(key, AES.MODE_CBC, iv)
     return cipher.encrypt(pad(payload, AES.block_size))
 
+FREE_FIRE_VERSION = "1.132.1"
+
 async def get_playstore_version():
-    loop = asyncio.get_event_loop()
-    result = await loop.run_in_executor(
-        None,
-        lambda: play_scraper('com.dts.freefireth', lang='hi', country='id')
-    )
-    return result.get("version")
+    return FREE_FIRE_VERSION
 
 async def version_config():
     app_version = await get_playstore_version()
@@ -1385,7 +1390,7 @@ async def functional_lone_wolf(addrs, starter_packet, account_region, client_ver
                 async def send_start_match():
                     nonlocal search_attempts, last_start_time
                     search_attempts += 1
-                    current_region = "BD"
+                    current_region = account_region if account_region else "BD"
                     print_info(f"[LONE WOLF] Sending StartMatch #{search_attempts} region: {current_region}")
                     try:
                         await asyncio.sleep(random.uniform(0.3, 0.6))
